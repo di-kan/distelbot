@@ -46,40 +46,41 @@ def update_coins(forced=False):
     global previous_time, interval_minutes, coins
 
     def refresh_data():
-        proxy_servers = {
-            'http': 'http://95.111.250.18:12370',
-            'https': 'http://95.111.250.18:12370',
-        }
-
         print("refreshing data from website")
         headers = {
                 "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) "
                               "Chrome/98.0.4758.102 Safari/537.36",
                 "Accept-Language": "en-US,en;q=0.9"}
-        response = requests.get(url, headers=headers)
-        print(response)
-
-        soup = BeautifulSoup(response.text, "html.parser")
-        result = soup.find("table", class_="table")
-        rows = result.findAll("tr")
-
         new_coins = []
-        for row in rows:
-            tmp = []
-            for cell in row.findAll('td'):
-                tmp.append(cell.text.strip())
-            if len(tmp) > 0:
-                start = 2
-                new_lines = tmp[start].count('\n')
-                what = "\n"*(new_lines-1)
-                names = re.sub(what, "\n", tmp[start]).split("\n")
-                name = names[0]
-                short_name = names[2]
-                # print(name, short_name)
-                coin = Coin(name, short_name, tmp[start+1],tmp[start+2],tmp[start+3],tmp[start+4],tmp[start+5],tmp[start+6])
-                new_coins.append(coin)
-        when = datetime.datetime.now()
-        return when, new_coins
+        try:
+            response = requests.get(url, headers=headers, proxies=proxy_servers)
+            response.raise_for_status()
+            print(response)
+        except Exception as e:
+            print(f"ERROR: {e}")
+        else:
+            soup = BeautifulSoup(response.text, "html.parser")
+            result = soup.find("table", class_="table")
+            rows = result.findAll("tr")
+
+
+            for row in rows:
+                tmp = []
+                for cell in row.findAll('td'):
+                    tmp.append(cell.text.strip())
+                if len(tmp) > 0:
+                    start = 2
+                    new_lines = tmp[start].count('\n')
+                    what = "\n"*(new_lines-1)
+                    names = re.sub(what, "\n", tmp[start]).split("\n")
+                    name = names[0]
+                    short_name = names[2]
+                    # print(name, short_name)
+                    coin = Coin(name, short_name, tmp[start+1],tmp[start+2],tmp[start+3],tmp[start+4],tmp[start+5],tmp[start+6])
+                    new_coins.append(coin)
+        finally:
+            when = datetime.datetime.now()
+            return when, new_coins
 
     if forced:
         print(previous_time)
@@ -191,6 +192,12 @@ def discord_bot():
         print(f"Error {e}")
 
 
+ip = '210.230.238.153'
+port ='443'
+proxy_servers = {
+    'http': f'http://{ip}{port}',
+    'https': f'http://{ip}:{port}',
+}
 
 previous_time = datetime.datetime.now()
 interval_minutes = 10
