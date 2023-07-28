@@ -46,13 +46,18 @@ def update_coins(forced=False):
     global previous_time, interval_minutes, coins
 
     def refresh_data():
+        proxy_servers = {
+            'http': 'http://95.111.250.18:12370',
+            'https': 'http://95.111.250.18:12370',
+        }
+
         print("refreshing data from website")
         headers = {
                 "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) "
                               "Chrome/98.0.4758.102 Safari/537.36",
                 "Accept-Language": "en-US,en;q=0.9"}
         response = requests.get(url, headers=headers)
-        response.raise_for_status()
+        print(response)
 
         soup = BeautifulSoup(response.text, "html.parser")
         result = soup.find("table", class_="table")
@@ -184,6 +189,7 @@ def discord_bot():
         client.run(DISCORD_TOKEN)
     except Exception as e:
         print(f"Error {e}")
+
 
 
 previous_time = datetime.datetime.now()
