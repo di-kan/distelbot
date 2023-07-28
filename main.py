@@ -173,7 +173,8 @@ def discord_bot():
             responses = smaller_responses(response)
             for response in responses:
                 print(len(response))
-                await message.channel.send(response)
+                if len(response) > 0:
+                    await message.channel.send(response)
 
     @client.event
     async def on_ready():
